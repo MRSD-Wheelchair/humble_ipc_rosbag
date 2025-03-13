@@ -116,8 +116,5 @@ Contributions are welcome! Please open an issue or submit a pull request on GitH
 
 ## Maintainers
 
-- [Your Name](mailto:your.email@example.com)
-```
-
-This README provides an overview of the `humble_ipc_rosbag` package, including installation instructions, usage examples, and configuration options. Adjust the repository URL, maintainer information, and other details as needed.
-This README provides an overview of the `humble_ipc_rosbag` package, including installation instructions, usage examples, and configuration options. Adjust the repository URL, maintainer information, and other details as needed.
+- [Yu-Hsin Chan](mailto:yuhsinch@andrew.cmu.edu)
+- [Haoyang He](mailto:hhe2@andrew.cmu.edu)

@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    bag_file: "test_bag"
+    storage_id: "mcap"
+    topic_names:
+      - "/zed/zed_node/left/image_rect_color"
+      - "/zed/zed_node/rgb/image_rect_color"
+      - "/zed/zed_node/point_cloud/cloud_registered"
+    topic_types:
+      - "Image"
+      - "Image"
+      - "PointCloud2"
+    max_bag_size: 1000000000
+    max_bag_duration: 0

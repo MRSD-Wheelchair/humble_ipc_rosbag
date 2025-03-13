@@ -22,23 +22,21 @@ from launch.actions import (
     DeclareLaunchArgument,
     OpaqueFunction,
     IncludeLaunchDescription,
-    LogInfo
+    LogInfo,
 )
-from launch.substitutions import (
-    LaunchConfiguration
-)
-from launch_ros.actions import (
-    LoadComposableNodes
-)
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
+
 
 # Function to parse array parameters
 def parse_array_param(param):
-    str = param.replace('[', '')
-    str = str.replace(']', '')
-    str = str.replace(' ', '')
-    arr = str.split(',')
+    str = param.replace("[", "")
+    str = str.replace("]", "")
+    str = str.replace(" ", "")
+    arr = str.split(",")
     return arr
+
 
 def launch_setup(context, *args, **kwargs):
 
@@ -46,84 +44,59 @@ def launch_setup(context, *args, **kwargs):
     actions = []
 
     # Arguments
-    names = LaunchConfiguration('cam_names')
-    models = LaunchConfiguration('cam_models')
-    serials = LaunchConfiguration('cam_serials')
-    disable_tf = LaunchConfiguration('disable_tf')
+    names = LaunchConfiguration("cam_names")
+    models = LaunchConfiguration("cam_models")
+    serials = LaunchConfiguration("cam_serials")
+    disable_tf = LaunchConfiguration("disable_tf")
 
     # Call the multi-camera launch file
     multi_camera_launch_file = os.path.join(
-        get_package_share_directory('zed_multi_camera'),
-        'launch',
-        'zed_multi_camera.launch.py'
+        get_package_share_directory("zed_multi_camera"),
+        "launch",
+        "zed_multi_camera.launch.py",
     )
     zed_multi_camera = IncludeLaunchDescription(
-        launch_description_source=PythonLaunchDescriptionSource(multi_camera_launch_file),
+        launch_description_source=PythonLaunchDescriptionSource(
+            multi_camera_launch_file
+        ),
         launch_arguments={
-            'cam_names': names,
-            'cam_models': models,
-            'cam_serials': serials,
-            'disable_tf': disable_tf
-        }.items()
+            "cam_names": names,
+            "cam_models": models,
+            "cam_serials": serials,
+            "disable_tf": disable_tf,
+        }.items(),
     )
     actions.append(zed_multi_camera)
-    
-    cam_count = len(names.perform(context).split(','))
+
+    cam_count = len(names.perform(context).split(","))
 
     # Create topic remappings for the point cloud node
     remappings = []
     name_array = parse_array_param(names.perform(context))
     for i in range(cam_count):
-        base_topic = 'pointcloud_' + str(i)
-        remap = '/zed_multi/' + name_array[i] + '/point_cloud/cloud_registered'
+        base_topic = "pointcloud_" + str(i)
+        remap = "/zed_multi/" + name_array[i] + "/point_cloud/cloud_registered"
         remapping = (base_topic, remap)
         remappings.append(remapping)
 
-    # Create the point cloud node
-    # pc_node = ComposableNode(
-    #     package='zed_ipc',
-    #     plugin='stereolabs::PointCloudComponent',
-    #     name='ipc_point_cloud',
-    #     namespace='zed_multi',
-    #     parameters=[{
-    #         'cam_count': cam_count
-    #     }],
-    #     remappings=remappings,
-    #     extra_arguments=[{'use_intra_process_comms': True}]
-    # )
+    default_params_file = os.path.join(
+        get_package_share_directory("bag_recorder_nodes"), "config", "params.yaml"
+    )
 
-    # downsample pc
-    # pc_downsample = ComposableNode(
-    #     package='pointcloud_downsampler',
-    #     name='ipc_downsampled_pc',
-    #     plugin='PointCloudDownsampler',
-    #     namespace='zed_multi',
-    #     parameters=[{
-    #         'input_topic': '/zed_multi/zed_f/point_cloud/cloud_registered',
-    #         'output_topic': '/zed_multi/zed_f/point_cloud_ds/cloud_registered',
-    #         'leaf_size': 0.05,
-    #     }],
-    #     remappings=remappings,
-    #     extra_arguments=[{'use_intra_process_comms': True}]
-    # )
-    
     # bag recorder
     bag_recorder = ComposableNode(
-        package='bag_recorder_nodes',
-        name='bag_recorder',
-        plugin='SimpleBagRecorder',
-        namespace='zed_multi',
-        # parameters=[{
-        #     'cam_count': cam_count
-        # }],
-        remappings=remappings,
-        extra_arguments=[{'use_intra_process_comms': True}]
+        package="bag_recorder_nodes",
+        name="bag_recorder",
+        plugin="mrsd::IPCBagRecorder",
+        parameters=[default_params_file],
+        namespace="zed_multi",
+        extra_arguments=[{"use_intra_process_comms": True}],
     )
 
     # Load the point cloud node in the container
     load_pc_node = LoadComposableNodes(
         composable_node_descriptions=[bag_recorder],
-        target_container='/zed_multi/zed_multi_container'
+        target_container="/zed_multi/zed_multi_container",
     )
     actions.append(load_pc_node)
 
@@ -134,18 +107,22 @@ def generate_launch_description():
     return LaunchDescription(
         [
             DeclareLaunchArgument(
-                'cam_names',
-                description='An array containing the names of the cameras, e.g. [zed_front,zed_back]'),
+                "cam_names",
+                description="An array containing the names of the cameras, e.g. [zed_front,zed_back]",
+            ),
             DeclareLaunchArgument(
-                'cam_models',
-                description='An array containing the names of the cameras, e.g. [zed2i,zed2]'),
+                "cam_models",
+                description="An array containing the names of the cameras, e.g. [zed2i,zed2]",
+            ),
             DeclareLaunchArgument(
-                'cam_serials',
-                description='An array containing the serial numbers of the cameras, e.g. [35199186,23154724]'),
+                "cam_serials",
+                description="An array containing the serial numbers of the cameras, e.g. [35199186,23154724]",
+            ),
             DeclareLaunchArgument(
-                'disable_tf',
-                default_value='False',
-                description='If `True` disable TF broadcasting for all the cameras in order to fuse visual odometry information externally.'),
-            OpaqueFunction(function=launch_setup)
+                "disable_tf",
+                default_value="False",
+                description="If `True` disable TF broadcasting for all the cameras in order to fuse visual odometry information externally.",
+            ),
+            OpaqueFunction(function=launch_setup),
         ]
     )

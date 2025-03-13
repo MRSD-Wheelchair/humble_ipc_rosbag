@@ -25,30 +25,40 @@ find_package(example_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rosbag2_cpp REQUIRED)
+find_package(rosbag2_storage REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
-
-
-# add_executable(simple_bag_recorder src/simple_bag_recorder.cpp)
-add_library(simple_bag_recorder_component SHARED src/simple_bag_recorder.cpp)
-ament_target_dependencies(simple_bag_recorder_component rclcpp rclcpp_components rosbag2_cpp std_msgs sensor_msgs)
+add_library(ipc_bag_recorder_component SHARED src/ipc_bag_recorder.cpp)
+ament_target_dependencies(ipc_bag_recorder_component rclcpp rclcpp_components rosbag2_cpp std_msgs sensor_msgs rosbag2_storage)
 
 rclcpp_components_register_node(
-    simple_bag_recorder_component
-    PLUGIN "SimpleBagRecorder"
-    EXECUTABLE SimpleBagRecorder
+    ipc_bag_recorder_component
+    PLUGIN "mrsd::IPCBagRecorder"
+    EXECUTABLE IPCBagRecorder
 )
 
-ament_export_targets(export_simple_bag_recorder_component)
+ament_export_targets(export_ipc_bag_recorder_component)
 
 install(TARGETS
-  simple_bag_recorder_component
-  EXPORT export_simple_bag_recorder_component
+  ipc_bag_recorder_component
+  EXPORT export_ipc_bag_recorder_component
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+)
+
+# Install launch files
+install(DIRECTORY 
+  launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+# Install config files
+install(DIRECTORY 
+  config
+  DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

@@ -17,6 +17,8 @@ def generate_launch_description():
         get_package_share_directory("bag_recorder_nodes"), "config", "params.yaml"
     )
 
+    print(default_params_file)
+
     declare_params_file_arg = DeclareLaunchArgument(
         "params_file", default_value=default_params_file
     )

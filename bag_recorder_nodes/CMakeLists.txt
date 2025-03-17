@@ -15,6 +15,7 @@ set(DEPENDENCIES_COMP
     rclcpp_components
     builtin_interfaces
     sensor_msgs
+    nav_msgs
 )
 
 # find dependencies
@@ -29,9 +30,10 @@ find_package(rosbag2_storage REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 
 add_library(ipc_bag_recorder_component SHARED src/ipc_bag_recorder.cpp)
-ament_target_dependencies(ipc_bag_recorder_component rclcpp rclcpp_components rosbag2_cpp std_msgs sensor_msgs rosbag2_storage)
+ament_target_dependencies(ipc_bag_recorder_component rclcpp rclcpp_components rosbag2_cpp std_msgs sensor_msgs rosbag2_storage nav_msgs)
 
 rclcpp_components_register_node(
     ipc_bag_recorder_component

@@ -6,6 +6,8 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include <rosbag2_cpp/writer.hpp>
 #include <rosbag2_storage/storage_options.hpp>
@@ -85,7 +87,18 @@ namespace mrsd {
 
           odometry_subscriptions_[topic_name] = create_subscription<nav_msgs::msg::Odometry>(
             topic_name, 10, callback);
-        } else {
+        } else if (topic_type == "sensor_msgs/msgs/NavSatFix") {
+          std::function<void(const sensor_msgs::msg::NavSatFix::SharedPtr msg)> callback =
+            std::bind(&IPCBagRecorder::nav_sat_fix_callback, this, _1, topic_name);
+
+          nav_sat_fix_subscriptions_[topic_name] = create_subscription<sensor_msgs::msg::NavSatFix>(
+            topic_name, 10, callback);
+        } else if (topic_type == "geometry_msgs/msg/PoseStamped") {
+          std::function<void(const geometry_msgs::msg::PoseStamped::SharedPtr msg)> callback =
+            std::bind(&IPCBagRecorder::pose_stamped_callback, this, _1, topic_name);
+          pose_stamped_subscriptions_[topic_name] = create_subscription<geometry_msgs::msg::PoseStamped>(
+            topic_name, 10, callback);
+        }else {
           RCLCPP_ERROR(this->get_logger(), "Unsupported topic type: %s", topic_type.c_str());
         }
       };
@@ -95,7 +108,7 @@ namespace mrsd {
     void pc_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg, const std::string& topic_name) const
     {
       auto serialized_msg = std::make_shared<rclcpp::SerializedMessage>();
-      rclcpp::Serialization< nav_msgs::msg::Odometry > serialization;
+      rclcpp::Serialization< sensor_msgs::msg::PointCloud2 > serialization;
       serialization.serialize_message(msg.get(), serialized_msg.get());
       rclcpp::Time time_stamp = msg->header.stamp;
       writer_->write(serialized_msg, topic_name, "sensor_msgs/msg/PointCloud2", time_stamp);
@@ -104,7 +117,7 @@ namespace mrsd {
     void rgb_callback(const sensor_msgs::msg::Image::SharedPtr msg, const std::string& topic_name) const
     {
       auto serialized_msg = std::make_shared<rclcpp::SerializedMessage>();
-      rclcpp::Serialization< nav_msgs::msg::Odometry > serialization;
+      rclcpp::Serialization< sensor_msgs::msg::Image > serialization;
       serialization.serialize_message(msg.get(), serialized_msg.get());
       rclcpp::Time time_stamp = msg->header.stamp;
       writer_->write(serialized_msg, topic_name, "sensor_msgs/msg/Image", time_stamp);
@@ -113,7 +126,7 @@ namespace mrsd {
     void camera_info_callback(const sensor_msgs::msg::CameraInfo::SharedPtr msg, const std::string& topic_name) const
     {
       auto serialized_msg = std::make_shared<rclcpp::SerializedMessage>();
-      rclcpp::Serialization< nav_msgs::msg::Odometry > serialization;
+      rclcpp::Serialization< sensor_msgs::msg::CameraInfo > serialization;
       serialization.serialize_message(msg.get(), serialized_msg.get());
       rclcpp::Time time_stamp = msg->header.stamp;
       writer_->write(serialized_msg, topic_name, "sensor_msgs/msg/CameraInfo", time_stamp);
@@ -128,10 +141,30 @@ namespace mrsd {
       writer_->write(serialized_msg, topic_name, "nav_msgs/msg/Odometry", time_stamp);
     }
 
+    void nav_sat_fix_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg, const std::string& topic_name) const
+    {
+      auto serialized_msg = std::make_shared<rclcpp::SerializedMessage>();
+      rclcpp::Serialization< sensor_msgs::msg::NavSatFix > serialization;
+      serialization.serialize_message(msg.get(), serialized_msg.get());
+      rclcpp::Time time_stamp = msg->header.stamp;
+      writer_->write(serialized_msg, topic_name, "sensor_msgs/msg/NavSatFix", time_stamp);
+    }
+
+    void pose_stamped_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg, const std::string& topic_name) const
+    {
+      auto serialized_msg = std::make_shared<rclcpp::SerializedMessage>();
+      rclcpp::Serialization< geometry_msgs::msg::PoseStamped > serialization;
+      serialization.serialize_message(msg.get(), serialized_msg.get());
+      rclcpp::Time time_stamp = msg->header.stamp;
+      writer_->write(serialized_msg, topic_name, "geometry_msgs/msg/PoseStamped", time_stamp);
+    }
+
     std::unordered_map<std::string, rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr> pc_subscriptions_;
     std::unordered_map<std::string, rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr> rgb_subscriptions_;
     std::unordered_map<std::string, rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr> camera_info_subscriptions_;
     std::unordered_map<std::string, rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr> odometry_subscriptions_;
+    std::unordered_map<std::string, rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr> nav_sat_fix_subscriptions_;
+    std::unordered_map<std::string, rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr> pose_stamped_subscriptions_;
     std::unique_ptr<rosbag2_cpp::Writer> writer_;
 
     std::string bag_file_;

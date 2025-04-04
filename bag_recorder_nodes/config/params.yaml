@@ -1,24 +1,16 @@
 /**:
   ros__parameters:
-    bag_file: "test_bag_4cams"
+    bag_file: "svd_route_0"
     storage_id: "mcap"
     topic_names:
-      - "/zed_multi/zed1/left/image_rect_color"
-      - "/zed_multi/zed1/point_cloud/cloud_registered"
-      - "/zed_multi/zed2/left/image_rect_color"
-      - "/zed_multi/zed2/point_cloud/cloud_registered"
-      - "/zed_multi/zed3/left/image_rect_color"
-      - "/zed_multi/zed3/point_cloud/cloud_registered"
-      - "/zed_multi/zed4/left/image_rect_color"
-      - "/zed_multi/zed4/point_cloud/cloud_registered"
+      - "/zed/zed_node/rgb/image_rect_color"
+      - "/zed/zed_node/pose"
+      - "/zed/zed_node/point_cloud/cloud_registered"
+      - "/zed/zed_node/odom"
     topic_types:
       - "sensor_msgs/msg/Image"
+      - "geometry_msgs/msg/PoseStamped"
       - "sensor_msgs/msg/PointCloud2"
-      - "sensor_msgs/msg/Image"
-      - "sensor_msgs/msg/PointCloud2"
-      - "sensor_msgs/msg/Image"
-      - "sensor_msgs/msg/PointCloud2"
-      - "sensor_msgs/msg/Image"
-      - "sensor_msgs/msg/PointCloud2"
+      - "nav_msgs/msg/Odometry"
     max_bag_size: 1000000000
     max_bag_duration: 0

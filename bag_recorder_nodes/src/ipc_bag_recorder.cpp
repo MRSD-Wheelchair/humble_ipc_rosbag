@@ -1,5 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/logging.hpp>
+#include <rclcpp/qos.hpp>
 #include "rclcpp/serialized_message.hpp"
 #include <std_msgs/msg/string.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -8,6 +9,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tf2_msgs/msg/tf_message.hpp>
 
 #include <rosbag2_cpp/writer.hpp>
 #include <rosbag2_storage/storage_options.hpp>
@@ -98,7 +100,34 @@ namespace mrsd {
             std::bind(&IPCBagRecorder::pose_stamped_callback, this, _1, topic_name);
           pose_stamped_subscriptions_[topic_name] = create_subscription<geometry_msgs::msg::PoseStamped>(
             topic_name, 10, callback);
-        }else {
+        } else if (topic_type == "tf2_msgs/msg/TFMessage") {
+          // Common callback for TF or TF_STATIC
+          std::function<void(const tf2_msgs::msg::TFMessage::SharedPtr msg)> callback =
+            std::bind(&IPCBagRecorder::tf_callback, this, _1, topic_name);
+        
+          if (topic_name == "/tf_static") {
+            // Use transient_local QoS
+            rclcpp::QoS qos_tf_static(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
+            qos_tf_static.keep_last(1);
+            qos_tf_static.reliable();
+            qos_tf_static.transient_local();
+
+            // Disable intraprocess for this subscription only
+            rclcpp::SubscriptionOptions sub_options;
+            sub_options.use_intra_process_comm = rclcpp::IntraProcessSetting::Disable;
+
+            tf_subscriptions_[topic_name] = create_subscription<tf2_msgs::msg::TFMessage>(
+              topic_name,
+              qos_tf_static,
+              callback,
+              sub_options);
+        
+          } else {
+            // For /tf: normal QoS is fine
+            tf_subscriptions_[topic_name] =
+              create_subscription<tf2_msgs::msg::TFMessage>(topic_name, 10, callback);
+          }
+        } else {
           RCLCPP_ERROR(this->get_logger(), "Unsupported topic type: %s", topic_type.c_str());
         }
       };
@@ -159,12 +188,22 @@ namespace mrsd {
       writer_->write(serialized_msg, topic_name, "geometry_msgs/msg/PoseStamped", time_stamp);
     }
 
+    void tf_callback(const tf2_msgs::msg::TFMessage::SharedPtr msg, const std::string& topic_name) const
+    {
+      auto serialized_msg = std::make_shared<rclcpp::SerializedMessage>();
+      rclcpp::Serialization< tf2_msgs::msg::TFMessage > serialization;
+      serialization.serialize_message(msg.get(), serialized_msg.get());
+      rclcpp::Time time_stamp = msg->transforms[0].header.stamp;
+      writer_->write(serialized_msg, topic_name, "tf2_msgs/msg/TFMessage", time_stamp);
+    }
+
     std::unordered_map<std::string, rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr> pc_subscriptions_;
     std::unordered_map<std::string, rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr> rgb_subscriptions_;
     std::unordered_map<std::string, rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr> camera_info_subscriptions_;
     std::unordered_map<std::string, rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr> odometry_subscriptions_;
     std::unordered_map<std::string, rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr> nav_sat_fix_subscriptions_;
     std::unordered_map<std::string, rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr> pose_stamped_subscriptions_;
+    std::unordered_map<std::string, rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr> tf_subscriptions_;
     std::unique_ptr<rosbag2_cpp::Writer> writer_;
 
     std::string bag_file_;

@@ -17,6 +17,7 @@ set(DEPENDENCIES_COMP
     sensor_msgs
     nav_msgs
     geometry_msgs
+    tf2_msgs
 )
 
 # find dependencies
@@ -33,9 +34,10 @@ find_package(builtin_interfaces REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(tf2_msgs REQUIRED)
 
 add_library(ipc_bag_recorder_component SHARED src/ipc_bag_recorder.cpp)
-ament_target_dependencies(ipc_bag_recorder_component rclcpp rclcpp_components rosbag2_cpp std_msgs sensor_msgs rosbag2_storage nav_msgs geometry_msgs)
+ament_target_dependencies(ipc_bag_recorder_component rclcpp rclcpp_components rosbag2_cpp std_msgs sensor_msgs rosbag2_storage nav_msgs geometry_msgs tf2_msgs)
 
 rclcpp_components_register_node(
     ipc_bag_recorder_component

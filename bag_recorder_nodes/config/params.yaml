@@ -1,16 +1,20 @@
 /**:
   ros__parameters:
-    bag_file: "svd_route_0"
+    bag_file: "testing_route_0"
     storage_id: "mcap"
     topic_names:
       - "/zed/zed_node/rgb/image_rect_color"
       - "/zed/zed_node/pose"
       - "/zed/zed_node/point_cloud/cloud_registered"
       - "/zed/zed_node/odom"
+      - "/tf"
+      - "/tf_static"
     topic_types:
       - "sensor_msgs/msg/Image"
       - "geometry_msgs/msg/PoseStamped"
       - "sensor_msgs/msg/PointCloud2"
       - "nav_msgs/msg/Odometry"
+      - "tf2_msgs/msg/TFMessage"
+      - "tf2_msgs/msg/TFMessage"
     max_bag_size: 1000000000
     max_bag_duration: 0

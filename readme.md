@@ -106,6 +106,28 @@ To launch the recorder node with custom parameters, use the load.launch.py file 
 ros2 launch bag_recorder_nodes load.launch.py params_file:=/path/to/your/params.yaml
 ```
 
+### Recording Transient Local Topics
+
+To record topics published as a latched (transient local) topic, you will need to set a custom QoS setting for the topic required in the cpp code. An example is provided in the code for the topic "/tf_static" and disable intra-process communication for that specific topic. TODO: Autonmated QoS setting with config file.
+
+When replaying the bag with ros2 bag play, you will need to provide a custom qos profile override for that topic. An example is provided in qos_overrides.yaml:
+
+```yaml
+/tf_static:
+  history: KEEP_LAST
+  depth: 1
+  reliability: RELIABLE
+  durability: TRANSIENT_LOCAL
+```
+
+And apply the override to when playing the bag, such as:
+
+```bash
+ros2 bag play testing_route_0/ --qos-profile-overrides-path src/humble_ipc_rosbag bag_recorder_nodes/qos_overrides.yaml
+```
+
+For bags without transient local topics, you may replay the ros2 bag as normal using ros2 bag play from the default ros2 bag Player. 
+
 ## License
 
 This project is licensed under the Apache License, Version 2.0. See the LICENSE file for details.

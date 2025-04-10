@@ -3,3 +3,4 @@
   depth: 1
   reliability: RELIABLE
   durability: TRANSIENT_LOCAL
+  # durability: VOLATILE

@@ -1,0 +1,5 @@
+storage_id: mcap
+config:
+  preload_metadata: true
+  cache_size: 100000000
+

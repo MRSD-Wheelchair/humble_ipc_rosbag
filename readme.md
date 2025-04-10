@@ -123,7 +123,7 @@ When replaying the bag with ros2 bag play, you will need to provide a custom qos
 And apply the override to when playing the bag, such as:
 
 ```bash
-ros2 bag play testing_route_0/ --qos-profile-overrides-path src/humble_ipc_rosbag bag_recorder_nodes/qos_overrides.yaml
+ros2 bag play testing_route_0/ --qos-profile-overrides-path src/humble_ipc_rosbag/bag_recorder_nodes/qos_overrides.yaml
 ```
 
 For bags without transient local topics, you may replay the ros2 bag as normal using ros2 bag play from the default ros2 bag Player. 
